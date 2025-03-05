@@ -2,26 +2,34 @@
 """
 Convert "KepServer" CSV file to "OPC Quick Client" OTC file - by Olivier
 """
-import binascii, os
+import binascii, os, sys
 
 def TypeToHex(tipo): #convertire il tipo in un carattere hexadecimale
     if tipo=="Default":
         return "00" #hex(0)[2:].zfill(2)
     elif tipo=="Short":
         return "02" #hex(2)
+    elif tipo=="Long":
+        return "03" #hex(3)
+    elif tipo=="Float":
+        return "04" #hex(4)
     elif tipo=="Double":
         return "05" #hex(5)
     elif tipo=="String":
         return "08" #hex(8)
     elif tipo=="Boolean":
         return "0B" #hex(11)
+    elif tipo=="Char":
+        return "10" #hex(16)
     elif tipo=="Word":
         return "12" #hex(18)
+    elif tipo=="Dword":
+        return "13" #hex(19)
     else:
         print("Tipo "+tipo+" non trovato")
         return
     
-def CSVtoOCT(FileAdress):
+def CSVtoOTC(FileAdress):
     LogItems=[]
     LenItems=[]
     TipoItems=[]
@@ -40,14 +48,15 @@ def CSVtoOCT(FileAdress):
             
     #Scrivere un file binario in hex
     BlockInizio1 = "0100000002000000fffeff0c51007500690063006b00200043006c00690065006e007400fffeff164b006500700077006100720065002e004b0045005000530065007200760065007200450058002e0056003600fffeff00000000000100000001000000fffeff06470072006f00750070003000e8030000090400000000000000000000010000000200000000000000"
-    BlockInizio2 = "000000"
+    BlockInizio2 = "0000"
     BlockItem1 = "02000000fffeff00fffeff"
     BlockItem2 = "01"
     BlockItem3 = "0003000000"
         
     with open(FileAdress.replace('.csv','.otc'),"wb") as file_out:  #create a file / "wb" = write Binary / togliere l'estensione CSV e aggiungere OTC invece.
         file_out.write(binascii.unhexlify(BlockInizio1))
-        file_out.write(binascii.unhexlify(hex(total_number)[2:].zfill(2))) #(hex(numero totale di elementi) /"[2:]"per togliere "0x" /"zfill(2)"per forzarlo a 2 bits.
+        file_out.write(binascii.unhexlify(hex(total_number%256)[2:].zfill(2))) #(hex(numero totale di elementi) /"[2:]"per togliere "0x" /"zfill(2)"per forzarlo a 2 bits.
+        file_out.write(binascii.unhexlify(hex(total_number//256)[2:].zfill(2))) # "%"= modulo, "//"=divisione intera
         file_out.write(binascii.unhexlify(BlockInizio2))
         for i in range(total_number-1,-1,-1): #si va al contrario
             file_out.write(binascii.unhexlify(BlockItem1))
@@ -60,8 +69,12 @@ def CSVtoOCT(FileAdress):
             file_out.write(binascii.unhexlify(BlockItem3))
 
 FolderName = os.getcwd() #get current dir
-print(FolderName)    
-for FileName in os.listdir(FolderName):
-    if FileName.endswith(".csv"): #select a folder and take all csv files in it
-        print(FileName)
-        CSVtoOCT(FolderName+"\\"+FileName)
+print(FolderName)  
+if len(sys.argv) > 1:   # If a filename is provided as an argument, open that file
+    FileName = sys.argv[1]
+    CSVtoOTC(FolderName+"\\"+FileName)  
+else:  # If no argument is provided, open all CSV in the current directory
+    for FileName in os.listdir(FolderName):
+        if FileName.endswith(".csv"): #select a folder and take all csv files in it
+            print(FileName)
+            CSVtoOTC(FolderName+"\\"+FileName)
