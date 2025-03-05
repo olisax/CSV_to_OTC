@@ -10,8 +10,8 @@ Convert "KepServer" CSV file to "OPC Quick Client" OTC file for a quick visualiz
 **Options:**
 - No arguments: Process all .csv files in the current directory.
 - 1 argument:
-* If it's a .csv filename: Process the specific file in the current directory.
-* If it's a directory: Process all .csv files in the directory.
+    * If it's a .csv filename: Process the specific file in the current directory.
+    * If it's a directory: Process all .csv files in the directory.
 - 2 arguments:
-* Arguments can be in any order: .csv filename and directory.
-* Process the specific file in the specified directory.
+    * Arguments can be in any order: .csv filename and directory.
+    * Process the specific file in the specified directory.
